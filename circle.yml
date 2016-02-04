@@ -19,7 +19,7 @@ test:
     - echo "Skip test task"
 deployment:
   canary:
-    branch: 0.26.8.x
+    branch: 1.0.x
     commands:
       - rm -rf "/home/ubuntu/.gradle/"
       - rm -rf "/home/ubuntu/.m2"
