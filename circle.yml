@@ -28,7 +28,6 @@ deployment:
       - git clone git@github.com:eaglesakura/maven.git
       - ./script/deploy.sh
       - ./script/circle-maven-commit.sh
-      - ./script/build-sample.sh
   develop:
     branch: develop
     commands:
