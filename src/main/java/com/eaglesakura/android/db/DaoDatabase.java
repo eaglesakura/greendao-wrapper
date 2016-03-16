@@ -1,16 +1,18 @@
 package com.eaglesakura.android.db;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
+import com.eaglesakura.util.LogUtil;
+import com.eaglesakura.util.ThrowableRunnable;
+import com.eaglesakura.util.ThrowableRunner;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import com.eaglesakura.util.LogUtil;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 import de.greenrobot.dao.AbstractDao;
 import de.greenrobot.dao.AbstractDaoMaster;
@@ -33,9 +35,6 @@ public abstract class DaoDatabase<SessionClass extends AbstractDaoSession> {
 
     /**
      * 新規に生成する
-     *
-     * @param context
-     * @param daoMasterClass
      */
     public DaoDatabase(Context context, Class<? extends AbstractDaoMaster> daoMasterClass) {
         this.context = context.getApplicationContext();
@@ -44,9 +43,6 @@ public abstract class DaoDatabase<SessionClass extends AbstractDaoSession> {
 
     /**
      * DaoMasterを指定して生成する
-     *
-     * @param context
-     * @param daoMaster
      */
     public DaoDatabase(Context context, AbstractDaoMaster daoMaster) {
         this.context = context.getApplicationContext();
@@ -95,11 +91,18 @@ public abstract class DaoDatabase<SessionClass extends AbstractDaoSession> {
     /**
      * Sessionを取得する
      * queryを投げるのに使う。
-     *
-     * @return
      */
     public SessionClass getSession() {
         return session;
+    }
+
+    /**
+     * 戻り値と例外を許容してトランザクション実行を行う
+     */
+    protected <RetType, ErrType extends Throwable> RetType runInTx(ThrowableRunnable<RetType, ErrType> runnable) throws ErrType {
+        ThrowableRunner<RetType, ErrType> runner = new ThrowableRunner<>(runnable);
+        session.runInTx(runner);
+        return runner.getOrThrow();
     }
 
     /**
@@ -137,9 +140,6 @@ public abstract class DaoDatabase<SessionClass extends AbstractDaoSession> {
 
     /**
      * insertを試行し、失敗したらupdateを行う
-     *
-     * @param entity
-     * @param session
      */
     protected <T, K> void insertOrUpdate(T entity, AbstractDao<T, K> session) {
         try {
@@ -151,11 +151,6 @@ public abstract class DaoDatabase<SessionClass extends AbstractDaoSession> {
 
     /**
      * ラップしたオブジェクトを返す
-     *
-     * @param origin
-     * @param originClass
-     * @param convertClass
-     * @return
      */
     public static <T, K> List<K> wrap(List<T> origin, Class<T> originClass, Class<K> convertClass) {
         try {
