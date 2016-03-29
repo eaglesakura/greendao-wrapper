@@ -1,6 +1,5 @@
 package com.eaglesakura.android.db;
 
-import com.eaglesakura.util.LogUtil;
 import com.eaglesakura.util.ThrowableRunnable;
 import com.eaglesakura.util.ThrowableRunner;
 
@@ -11,8 +10,6 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
 
 import de.greenrobot.dao.AbstractDao;
 import de.greenrobot.dao.AbstractDaoMaster;
@@ -64,8 +61,7 @@ public abstract class DaoDatabase<SessionClass extends AbstractDaoSession> {
                     daoMaster = constructor.newInstance(db);
                     session = (SessionClass) daoMaster.newSession();
                 } catch (Exception e) {
-                    LogUtil.d(e);
-                    throw new IllegalStateException();
+                    throw new IllegalStateException(e);
                 }
             }
             ++refs;
@@ -134,7 +130,6 @@ public abstract class DaoDatabase<SessionClass extends AbstractDaoSession> {
             Method createAllTables = daoMasterClass.getMethod("createAllTables", SQLiteDatabase.class, boolean.class);
             createAllTables.invoke(daoMaster, daoMaster.getDatabase(), true);
         } catch (Exception e) {
-            LogUtil.d(e);
         }
     }
 
@@ -146,25 +141,6 @@ public abstract class DaoDatabase<SessionClass extends AbstractDaoSession> {
             session.insertOrReplace(entity);
         } catch (SQLiteConstraintException e) {
             session.update(entity);
-        }
-    }
-
-    /**
-     * ラップしたオブジェクトを返す
-     */
-    public static <T, K> List<K> wrap(List<T> origin, Class<T> originClass, Class<K> convertClass) {
-        try {
-            Constructor<K> constructor = convertClass.getConstructor(originClass);
-            List<K> result = new ArrayList<K>();
-
-            for (T org : origin) {
-                result.add(constructor.newInstance(org));
-            }
-
-            return result;
-        } catch (Exception e) {
-            LogUtil.d(e);
-            return null;
         }
     }
 
