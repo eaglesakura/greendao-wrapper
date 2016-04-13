@@ -1,5 +1,8 @@
 package com.eaglesakura.android.db;
 
+import com.eaglesakura.lambda.Action1;
+import com.eaglesakura.lambda.Action1Throwable;
+import com.eaglesakura.lambda.Action2Throwable;
 import com.eaglesakura.util.ThrowableRunnable;
 import com.eaglesakura.util.ThrowableRunner;
 
@@ -15,6 +18,7 @@ import de.greenrobot.dao.AbstractDao;
 import de.greenrobot.dao.AbstractDaoMaster;
 import de.greenrobot.dao.AbstractDaoSession;
 import de.greenrobot.dao.Property;
+import de.greenrobot.dao.query.CloseableListIterator;
 
 public abstract class DaoDatabase<SessionClass extends AbstractDaoSession> {
 
@@ -99,6 +103,28 @@ public abstract class DaoDatabase<SessionClass extends AbstractDaoSession> {
         ThrowableRunner<RetType, ErrType> runner = new ThrowableRunner<>(runnable);
         session.runInTx(runner);
         return runner.getOrThrow();
+    }
+
+    /**
+     * イテレータで読み込めるオブジェクトに対して処理を行う
+     */
+    protected <T, R, E extends Throwable> R each(CloseableListIterator<T> iterator, Action2Throwable<T, R, E> action, R result) throws E {
+        if (iterator == null) {
+            return result;
+        }
+
+        try {
+            while (iterator.hasNext()) {
+                action.action(iterator.next(), result);
+            }
+        } finally {
+            try {
+                iterator.close();
+            } catch (Exception e) {
+            }
+        }
+
+        return result;
     }
 
     /**
