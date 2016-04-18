@@ -99,7 +99,7 @@ public abstract class DaoDatabase<SessionClass extends AbstractDaoSession> {
     /**
      * 戻り値と例外を許容してトランザクション実行を行う
      */
-    protected <RetType, ErrType extends Throwable> RetType runInTx(ThrowableRunnable<RetType, ErrType> runnable) throws ErrType {
+    public <RetType, ErrType extends Throwable> RetType runInTx(ThrowableRunnable<RetType, ErrType> runnable) throws ErrType {
         ThrowableRunner<RetType, ErrType> runner = new ThrowableRunner<>(runnable);
         session.runInTx(runner);
         return runner.getOrThrow();
