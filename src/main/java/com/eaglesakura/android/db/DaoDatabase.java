@@ -128,6 +128,26 @@ public abstract class DaoDatabase<SessionClass extends AbstractDaoSession> {
     }
 
     /**
+     * イテレータで読み込めるオブジェクトに対して処理を行う
+     */
+    protected <T, E extends Throwable> void each(CloseableListIterator<T> iterator, Action1Throwable<T, E> action) throws E {
+        if (iterator == null) {
+            return;
+        }
+
+        try {
+            while (iterator.hasNext()) {
+                action.action(iterator.next());
+            }
+        } finally {
+            try {
+                iterator.close();
+            } catch (Exception e) {
+            }
+        }
+    }
+
+    /**
      *
      */
     public void close() {
