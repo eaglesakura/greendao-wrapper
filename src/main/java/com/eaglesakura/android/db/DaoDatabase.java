@@ -1,6 +1,5 @@
 package com.eaglesakura.android.db;
 
-import com.eaglesakura.lambda.Action1;
 import com.eaglesakura.lambda.Action1Throwable;
 import com.eaglesakura.lambda.Action2Throwable;
 import com.eaglesakura.util.ThrowableRunnable;
@@ -11,6 +10,7 @@ import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import java.io.Closeable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
@@ -20,7 +20,7 @@ import de.greenrobot.dao.AbstractDaoSession;
 import de.greenrobot.dao.Property;
 import de.greenrobot.dao.query.CloseableListIterator;
 
-public abstract class DaoDatabase<SessionClass extends AbstractDaoSession> {
+public abstract class DaoDatabase<SessionClass extends AbstractDaoSession> implements Closeable {
 
     protected final Context context;
 
@@ -49,6 +49,10 @@ public abstract class DaoDatabase<SessionClass extends AbstractDaoSession> {
         this.context = context.getApplicationContext();
         this.daoMaster = daoMaster;
         this.daoMasterClass = daoMaster.getClass();
+    }
+
+    public Context getContext() {
+        return context;
     }
 
     protected abstract SQLiteOpenHelper createHelper();
@@ -80,11 +84,6 @@ public abstract class DaoDatabase<SessionClass extends AbstractDaoSession> {
     }
 
     public void openWritable() {
-        open(false);
-    }
-
-    @Deprecated
-    public void open() {
         open(false);
     }
 
@@ -148,8 +147,9 @@ public abstract class DaoDatabase<SessionClass extends AbstractDaoSession> {
     }
 
     /**
-     *
+     * 必要に応じてDBを閉じる
      */
+    @Override
     public void close() {
         synchronized (refsLock) {
             --refs;
