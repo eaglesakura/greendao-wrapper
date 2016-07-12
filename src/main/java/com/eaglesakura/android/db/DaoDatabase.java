@@ -79,6 +79,16 @@ public abstract class DaoDatabase<SessionClass extends AbstractDaoSession> imple
         }
     }
 
+    public <T extends DaoDatabase<SessionClass>> T openReadOnly(Class<T> clazz) {
+        openReadOnly();
+        return (T) this;
+    }
+
+    public <T extends DaoDatabase<SessionClass>> T openWritable(Class<T> clazz) {
+        openWritable();
+        return (T) this;
+    }
+
     public void openReadOnly() {
         open(true);
     }
