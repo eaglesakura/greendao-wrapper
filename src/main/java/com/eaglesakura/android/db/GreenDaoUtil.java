@@ -1,8 +1,8 @@
 package com.eaglesakura.android.db;
 
-import java.util.Iterator;
+import org.greenrobot.greendao.query.CloseableListIterator;
 
-import de.greenrobot.dao.query.CloseableListIterator;
+import java.util.Iterator;
 
 public class GreenDaoUtil {
     public static <T> void close(Iterator<T> itr) {

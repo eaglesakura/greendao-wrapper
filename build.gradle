@@ -1,8 +1,9 @@
 /**
  * 1.0.0   : release
  * 1.0.x   : Circle CIに移行
+ * 2.0.x   : GreenDao 3.x系統に移行
  */
-def ARTIFACT_VERSION = "1.0"
+def ARTIFACT_VERSION = "2.0"
 def ARTIFACT_NAME = file(".").absoluteFile.name
 def ARTIFACT_INSTALL_TARGET = getArtifactInstallTarget()
 
@@ -23,8 +24,8 @@ repositories {
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion "23.0.3"
+    compileSdkVersion 24
+    buildToolsVersion "24.0.1"
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_7
@@ -33,7 +34,7 @@ android {
 
     defaultConfig {
         minSdkVersion 10
-        targetSdkVersion 23
+        targetSdkVersion 24
     }
 }
 
@@ -54,7 +55,7 @@ dependencies {
         androidTestCompile 'com.eaglesakura:android-devicetest-support:1.+'
         testCompile 'com.eaglesakura:android-unittest-support:1.+'
     }
-    compile 'de.greenrobot:greendao:1.3.7'
+    compile 'org.greenrobot:greendao:3.0.+'
 }
 
 apply plugin: 'maven'
@@ -128,7 +129,7 @@ uploadArchives {
             dependency {
                 groupId = 'de.greenrobot'
                 artifactId = 'greendao'
-                version = '1.3.7'
+                version = '3.0.+'
                 scope = 'compile'
             }
         }

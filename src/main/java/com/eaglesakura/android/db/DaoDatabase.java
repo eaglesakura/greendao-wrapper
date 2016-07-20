@@ -5,6 +5,12 @@ import com.eaglesakura.lambda.Action2Throwable;
 import com.eaglesakura.util.ThrowableRunnable;
 import com.eaglesakura.util.ThrowableRunner;
 
+import org.greenrobot.greendao.AbstractDao;
+import org.greenrobot.greendao.AbstractDaoMaster;
+import org.greenrobot.greendao.AbstractDaoSession;
+import org.greenrobot.greendao.Property;
+import org.greenrobot.greendao.query.CloseableListIterator;
+
 import android.content.Context;
 import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
@@ -14,11 +20,6 @@ import java.io.Closeable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
-import de.greenrobot.dao.AbstractDao;
-import de.greenrobot.dao.AbstractDaoMaster;
-import de.greenrobot.dao.AbstractDaoSession;
-import de.greenrobot.dao.Property;
-import de.greenrobot.dao.query.CloseableListIterator;
 
 public abstract class DaoDatabase<SessionClass extends AbstractDaoSession> implements Closeable {
 
