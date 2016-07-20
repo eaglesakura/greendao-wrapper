@@ -127,7 +127,7 @@ uploadArchives {
         }
         dependencies {
             dependency {
-                groupId = 'de.greenrobot'
+                groupId = 'org.greenrobot'
                 artifactId = 'greendao'
                 version = '3.0.+'
                 scope = 'compile'
