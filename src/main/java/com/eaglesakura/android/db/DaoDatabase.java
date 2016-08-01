@@ -12,6 +12,7 @@ import org.greenrobot.greendao.Property;
 import org.greenrobot.greendao.query.CloseableListIterator;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -174,6 +175,33 @@ public abstract class DaoDatabase<SessionClass extends AbstractDaoSession> imple
                 daoMaster = null;
             }
         }
+    }
+
+    protected Cursor rawQuery(String sql, String[] argments) {
+        SQLiteDatabase db = (SQLiteDatabase) getSession().getDatabase().getRawDatabase();
+        return db.rawQuery(sql, argments);
+    }
+
+    /**
+     * クエリを実行し、カーソルを得る
+     *
+     * Cursorはラップされ、closeされたタイミングでDao側も閉じる
+     *
+     * @param readOnly read onlyでDBを開く場合true
+     * @param sql      実行するSQL文
+     * @param args     SQL引数
+     * @return カーソル
+     */
+    public Cursor query(boolean readOnly, String sql, Object... args) {
+        open(readOnly);
+
+        String[] argments = new String[args.length];
+        int index = 0;
+        for (Object arg : args) {
+            argments[index++] = arg.toString();
+        }
+        Cursor cursor = rawQuery(sql, argments);
+        return new DaoCursor(cursor, this);
     }
 
     /**
