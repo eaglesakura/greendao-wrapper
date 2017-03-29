@@ -3,8 +3,9 @@
  * 1.0.x   : Circle CIに移行
  * 2.0.x   : GreenDao 3.x系統に移行
  * 2.1.x   : bintrayに移行
+ * 2.2.x   : 不要なメソッドを整理, protectedなフィールドをprivateに移行
  */
-def ARTIFACT_VERSION = "2.1"
+def ARTIFACT_VERSION = "2.2"
 def REPOSITORY_NAME = "maven"
 def BINTRAY_LICENSES = ["MIT"]
 def BINTRAY_LABELS = ["android"]
@@ -54,15 +55,15 @@ if (!hasProperty("EGLIBRARY_COMPILE_LOCAL")) {
 
 dependencies {
     if (EGLIBRARY_COMPILE_LOCAL) {
-        compile project(':eglibrary:simple-utils')
+        compile project(':eglibrary:java-commons')
 
         androidTestCompile project(":eglibrary:android-devicetest-support")
         testCompile project(":eglibrary:android-unittest-support")
     } else {
-        compile "com.eaglesakura:simple-utils:1.2.562"
+        compile "com.eaglesakura:java-commons:2.0.3"
 
-        androidTestCompile "com.eaglesakura:android-devicetest-support:2.1.270"
-        testCompile "com.eaglesakura:android-unittest-support:1.4.206"
+        androidTestCompile "com.eaglesakura:android-devicetest-support:2.1.272"
+        testCompile "com.eaglesakura:android-unittest-support:1.4.207"
     }
     compile("org.greenrobot:greendao:3.0.1") {
         exclude(group: "com.android.support")

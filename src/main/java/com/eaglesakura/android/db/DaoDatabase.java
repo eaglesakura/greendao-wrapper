@@ -20,83 +20,70 @@ import android.database.sqlite.SQLiteOpenHelper;
 import java.io.Closeable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
-public abstract class DaoDatabase<SessionClass extends AbstractDaoSession> implements Closeable {
+public abstract class DaoDatabase<SessionClass extends AbstractDaoSession, Self extends DaoDatabase> implements Closeable {
 
-    protected final Context context;
+    private final Context mContext;
 
-    protected final Class<? extends AbstractDaoMaster> daoMasterClass;
+    private final Class<? extends AbstractDaoMaster> mDaoMasterClass;
 
-    protected AbstractDaoMaster daoMaster;
+    private AbstractDaoMaster mDaoMaster;
 
-    protected SessionClass session;
+    private SessionClass mSession;
 
     final private Object refsLock = new Object();
 
-    private int refs = 0;
+    private final AtomicInteger mRefs = new AtomicInteger(0);
+
+    /**
+     * 読み込み専用モードで開く
+     */
+    public static final int FLAG_READ_ONLY = 0x1 << 0;
 
     /**
      * 新規に生成する
      */
     public DaoDatabase(Context context, Class<? extends AbstractDaoMaster> daoMasterClass) {
-        this.context = context.getApplicationContext();
-        this.daoMasterClass = daoMasterClass;
+        this.mContext = context.getApplicationContext();
+        this.mDaoMasterClass = daoMasterClass;
     }
 
     /**
      * DaoMasterを指定して生成する
      */
     public DaoDatabase(Context context, AbstractDaoMaster daoMaster) {
-        this.context = context.getApplicationContext();
-        this.daoMaster = daoMaster;
-        this.daoMasterClass = daoMaster.getClass();
+        this.mContext = context.getApplicationContext();
+        this.mDaoMaster = daoMaster;
+        this.mDaoMasterClass = daoMaster.getClass();
     }
 
     public Context getContext() {
-        return context;
+        return mContext;
     }
 
     protected abstract SQLiteOpenHelper createHelper();
 
     @SuppressWarnings("unchecked")
-    public void open(boolean readOnly) {
+    public Self open(int flags) {
         synchronized (refsLock) {
-            if (daoMaster == null) {
+            if (mDaoMaster == null) {
                 SQLiteOpenHelper helper = createHelper();
-                SQLiteDatabase db = readOnly ? helper.getReadableDatabase() : helper.getWritableDatabase();
+                SQLiteDatabase db = ((flags & FLAG_READ_ONLY) == FLAG_READ_ONLY) ? helper.getReadableDatabase() : helper.getWritableDatabase();
 
                 try {
-                    Constructor<? extends AbstractDaoMaster> constructor = daoMasterClass.getConstructor(SQLiteDatabase.class);
-                    daoMaster = constructor.newInstance(db);
-                    session = (SessionClass) daoMaster.newSession();
+                    Constructor<? extends AbstractDaoMaster> constructor = mDaoMasterClass.getConstructor(SQLiteDatabase.class);
+                    mDaoMaster = constructor.newInstance(db);
+                    mSession = (SessionClass) mDaoMaster.newSession();
                 } catch (Exception e) {
                     throw new IllegalStateException(e);
                 }
             }
-            ++refs;
-
+            mRefs.incrementAndGet();
             // 正常終了した
-            return;
+            return (Self) this;
         }
-    }
-
-    public <T extends DaoDatabase<SessionClass>> T openReadOnly(Class<T> clazz) {
-        openReadOnly();
-        return (T) this;
-    }
-
-    public <T extends DaoDatabase<SessionClass>> T openWritable(Class<T> clazz) {
-        openWritable();
-        return (T) this;
-    }
-
-    public void openReadOnly() {
-        open(true);
-    }
-
-    public void openWritable() {
-        open(false);
     }
 
     /**
@@ -104,7 +91,7 @@ public abstract class DaoDatabase<SessionClass extends AbstractDaoSession> imple
      * queryを投げるのに使う。
      */
     public SessionClass getSession() {
-        return session;
+        return mSession;
     }
 
     /**
@@ -112,7 +99,7 @@ public abstract class DaoDatabase<SessionClass extends AbstractDaoSession> imple
      */
     public <RetType, ErrType extends Throwable> RetType runInTx(ThrowableRunnable<RetType, ErrType> runnable) throws ErrType {
         ThrowableRunner<RetType, ErrType> runner = new ThrowableRunner<>(runnable);
-        session.runInTx(runner);
+        mSession.runInTx(runner);
         return runner.getOrThrow();
     }
 
@@ -164,15 +151,14 @@ public abstract class DaoDatabase<SessionClass extends AbstractDaoSession> imple
     @Override
     public void close() {
         synchronized (refsLock) {
-            --refs;
-            if (refs > 0) {
+            if (mRefs.decrementAndGet() > 0) {
                 // まだ開いているセッションがあるため、閉じる必要はない
                 return;
             }
 
-            if (daoMaster != null) {
-                daoMaster.getDatabase().close();
-                daoMaster = null;
+            if (mDaoMaster != null) {
+                mDaoMaster.getDatabase().close();
+                mDaoMaster = null;
             }
         }
     }
@@ -193,7 +179,7 @@ public abstract class DaoDatabase<SessionClass extends AbstractDaoSession> imple
      * @return カーソル
      */
     public Cursor query(boolean readOnly, String sql, Object... args) {
-        open(readOnly);
+        open(FLAG_READ_ONLY);
 
         String[] argments = new String[args.length];
         int index = 0;
@@ -209,11 +195,11 @@ public abstract class DaoDatabase<SessionClass extends AbstractDaoSession> imple
      */
     public void drop() {
         try {
-            Method dropAllTables = daoMasterClass.getMethod("dropAllTables", SQLiteDatabase.class, boolean.class);
-            dropAllTables.invoke(daoMaster, daoMaster.getDatabase(), true);
+            Method dropAllTables = mDaoMasterClass.getMethod("dropAllTables", SQLiteDatabase.class, boolean.class);
+            dropAllTables.invoke(mDaoMaster, mDaoMaster.getDatabase(), true);
 
-            Method createAllTables = daoMasterClass.getMethod("createAllTables", SQLiteDatabase.class, boolean.class);
-            createAllTables.invoke(daoMaster, daoMaster.getDatabase(), true);
+            Method createAllTables = mDaoMasterClass.getMethod("createAllTables", SQLiteDatabase.class, boolean.class);
+            createAllTables.invoke(mDaoMaster, mDaoMaster.getDatabase(), true);
         } catch (Exception e) {
         }
     }
