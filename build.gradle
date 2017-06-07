@@ -21,7 +21,7 @@ buildscript {
         maven { url "https://maven.google.com" }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.0.0-alpha1'
+        classpath 'com.android.tools.build:gradle:3.0.0-alpha3'
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
         classpath 'com.github.dcendents:android-maven-gradle-plugin:1.5'
     }
@@ -60,15 +60,15 @@ if (!hasProperty("EGLIBRARY_COMPILE_LOCAL")) {
 
 dependencies {
     if (EGLIBRARY_COMPILE_LOCAL) {
-        compile project(':eglibrary:java-commons')
+        implementation project(':eglibrary:java-commons')
 
         androidTestImplementation project(":eglibrary:android-devicetest-support")
         testImplementation project(":eglibrary:android-unittest-support")
     } else {
         compile "com.eaglesakura:java-commons:2.0.3"
 
-        androidTestCompile "com.eaglesakura:android-devicetest-support:2.2.275"
-        testCompile "com.eaglesakura:android-unittest-support:1.5.211"
+        androidTestImplementation "com.eaglesakura:android-devicetest-support:2.2.275"
+        testImplementation "com.eaglesakura:android-unittest-support:1.5.211"
     }
     compile("org.greenrobot:greendao:3.0.1") {
         exclude(group: "com.android.support")
