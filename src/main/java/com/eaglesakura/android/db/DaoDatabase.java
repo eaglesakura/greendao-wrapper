@@ -97,7 +97,7 @@ public abstract class DaoDatabase<SessionClass extends AbstractDaoSession, Self 
     /**
      * 戻り値と例外を許容してトランザクション実行を行う
      */
-    public <RetType, ErrType extends Throwable> RetType runInTx(ThrowableRunnable<RetType, ErrType> runnable) throws ErrType {
+    public <RetType, ErrType extends Exception> RetType runInTx(ThrowableRunnable<RetType, ErrType> runnable) throws ErrType {
         ThrowableRunner<RetType, ErrType> runner = new ThrowableRunner<>(runnable);
         mSession.runInTx(runner);
         return runner.getOrThrow();
@@ -106,7 +106,7 @@ public abstract class DaoDatabase<SessionClass extends AbstractDaoSession, Self 
     /**
      * イテレータで読み込めるオブジェクトに対して処理を行う
      */
-    protected <T, R, E extends Throwable> R each(CloseableListIterator<T> iterator, Action2Throwable<T, R, E> action, R result) throws E {
+    protected <T, R, E extends Exception> R each(CloseableListIterator<T> iterator, Action2Throwable<T, R, E> action, R result) throws E {
         if (iterator == null) {
             return result;
         }
@@ -128,7 +128,7 @@ public abstract class DaoDatabase<SessionClass extends AbstractDaoSession, Self 
     /**
      * イテレータで読み込めるオブジェクトに対して処理を行う
      */
-    protected <T, E extends Throwable> void each(CloseableListIterator<T> iterator, Action1Throwable<T, E> action) throws E {
+    protected <T, E extends Exception> void each(CloseableListIterator<T> iterator, Action1Throwable<T, E> action) throws E {
         if (iterator == null) {
             return;
         }
