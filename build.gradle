@@ -53,26 +53,17 @@ android {
     }
 }
 
-// Local or maven
-if (!hasProperty("EGLIBRARY_COMPILE_LOCAL")) {
-    ext.EGLIBRARY_COMPILE_LOCAL = false
-}
-
 dependencies {
-    if (EGLIBRARY_COMPILE_LOCAL) {
-        implementation project(':eglibrary:java-commons')
+    compile "com.eaglesakura:java-commons:2.2.0"
 
-        androidTestImplementation project(":eglibrary:android-devicetest-support")
-        testImplementation project(":eglibrary:android-unittest-support")
-    } else {
-        compile "com.eaglesakura:java-commons:2.2.0"
+    androidTestImplementation "com.eaglesakura:android-devicetest-support:2.2.275"
+    testImplementation "com.eaglesakura:android-unittest-support:1.5.211"
 
-        androidTestImplementation "com.eaglesakura:android-devicetest-support:2.2.275"
-        testImplementation "com.eaglesakura:android-unittest-support:1.5.211"
-    }
     compile("org.greenrobot:greendao:3.0.1") {
         exclude(group: "com.android.support")
         exclude(group: "com.android.databinding")
+        exclude(group: "io.reactivex.rxjava2")
+        exclude(group: "io.reactivex", module: "rxjava")
     }
 }
 
